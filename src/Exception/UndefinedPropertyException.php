@@ -2,6 +2,9 @@
 
 namespace Acelot\Struct\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 class UndefinedPropertyException extends StructException
 {
 }
