@@ -28,15 +28,4 @@ class ValidationException extends StructException
     {
         return $this->errors;
     }
-
-    /**
-     * @param array $errors
-     *
-     * @return $this
-     */
-    public function setErrors(array $errors)
-    {
-        $this->errors = $errors;
-        return $this;
-    }
 }

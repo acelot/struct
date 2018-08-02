@@ -7,13 +7,12 @@ use Acelot\AutoMapper\Field;
 use Acelot\Struct\Exception\UndefinedPropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema\Prop;
-use function Acelot\Helpers\interval_to_string;
 use Respect\Validation\Exceptions\AttributeException;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Rules\Key as ValidationKey;
 
-abstract class Struct implements \Iterator, \Countable, \JsonSerializable
+abstract class Struct implements \Iterator, \Countable
 {
     /**
      * @var array
@@ -76,7 +75,7 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
     }
 
     /**
-     * @param $name
+     * @param string $name
      *
      * @return bool
      */
@@ -188,32 +187,6 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
     public function toArray(): array
     {
         return $this->data;
-    }
-
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        $data = [];
-        foreach (static::getSchema()->getProps() as $prop) {
-            if (!$this->has($prop->getName())) {
-                continue;
-            }
-
-            $value = $this->get($prop->getName());
-            if ($value instanceof \DateTimeInterface) {
-                $value = $value->format(\DateTime::RFC3339_EXTENDED);
-            }
-
-            if ($value instanceof \DateInterval) {
-                $value = interval_to_string($value);
-            }
-
-            $data[$prop->getName()] = $value;
-        }
-
-        return $data;
     }
 
     /**

@@ -16,6 +16,10 @@ class Schema
      */
     public function __construct(Prop ...$props)
     {
+        if (empty($props)) {
+            throw new \InvalidArgumentException('At least one prop must be defined');
+        }
+
         foreach ($props as $prop) {
             $this->props[$prop->getName()] = $prop;
         }
@@ -61,6 +65,10 @@ class Schema
      */
     public function with(Prop ...$props): Schema
     {
+        if (empty($props)) {
+            throw new \InvalidArgumentException('At least one prop must be defined');
+        }
+
         $clone = clone $this;
         foreach ($props as $prop) {
             $clone->props[$prop->getName()] = $prop;

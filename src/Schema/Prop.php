@@ -118,6 +118,22 @@ class Prop
     }
 
     /**
+     * @param string $sourceName
+     *
+     * @return Prop
+     */
+    public function withoutMapper(string $sourceName)
+    {
+        if ($sourceName === 'default') {
+            throw new \InvalidArgumentException('Default mapper cannot be removed');
+        }
+
+        $clone = clone $this;
+        unset($clone->mappers[$sourceName]);
+        return $clone;
+    }
+
+    /**
      * @return bool
      */
     public function isRequired(): bool
@@ -136,16 +152,6 @@ class Prop
     }
 
     /**
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function hasMeta(string $key): bool
-    {
-        return array_key_exists($key, $this->meta);
-    }
-
-    /**
      * @return Prop
      */
     public function notRequired(): Prop
@@ -153,6 +159,16 @@ class Prop
         $clone = clone $this;
         $clone->required = false;
         return $clone;
+    }
+
+    /**
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function hasMeta(string $key): bool
+    {
+        return array_key_exists($key, $this->meta);
     }
 
     /**
