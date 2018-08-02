@@ -1,0 +1,37 @@
+{
+  "name": "acelot/struct",
+  "description": "Declarative structure builder with validator and automapper for PHP 7",
+  "keywords": ["struct", "structure", "model", "validated", "strongly-typed", "class", "dto", "value-object"],
+  "type": "library",
+  "homepage": "https://github.com/acelot/struct",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Valeriy Protopopov",
+      "email": "provaleriy@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "ext-json": "*",
+    "acelot/automapper": "^1.1",
+    "acelot/helpers": "^1.0",
+    "respect/validation": "^1.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Acelot\\Struct\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Acelot\\Struct\\Tests\\": "tests"
+    }
+  },
+  "scripts": {
+    "test": "phpunit -c phpunit.xml"
+  }
+}
