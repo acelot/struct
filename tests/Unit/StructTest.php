@@ -122,4 +122,16 @@ class StructTest extends TestCase
         $this->expectException(ValidationException::class);
         $model = $model->set('gender', 'male');
     }
+
+    public function testJsonSerialize()
+    {
+        $model = new CreateUserModel([
+            'login' => 'superhacker',
+            'password' => 'correcthorsebatterystaple',
+            'birthday' => new \DateTimeImmutable('1988-08-08', new \DateTimeZone('UTC'))
+        ]);
+
+        $json = json_encode($model);
+        $this->assertEquals('{"login":"superhacker","password":"correcthorsebatterystaple","birthday":"1988-08-08T00:00:00.000+00:00"}', $json);
+    }
 }

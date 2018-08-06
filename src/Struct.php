@@ -12,7 +12,7 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Rules\Key as ValidationKey;
 
-abstract class Struct implements \Iterator, \Countable
+abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 {
     /**
      * @var array
@@ -187,6 +187,35 @@ abstract class Struct implements \Iterator, \Countable
     public function toArray(): array
     {
         return $this->data;
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        $data = [];
+        foreach (static::getSchema()->getProps() as $prop) {
+            if (!$this->has($prop->getName())) {
+                continue;
+            }
+
+            $value = $this->get($prop->getName());
+            $data[$prop->getName()] = static::jsonSerializeValue($value);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return mixed
+     * @codeCoverageIgnore
+     */
+    protected static function jsonSerializeValue($value)
+    {
+        return $value;
     }
 
     /**

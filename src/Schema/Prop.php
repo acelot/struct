@@ -110,7 +110,7 @@ class Prop
      *
      * @return Prop
      */
-    public function withMapper(DefinitionInterface $definition, string $sourceName)
+    public function withMapper(DefinitionInterface $definition, string $sourceName): Prop
     {
         $clone = clone $this;
         $clone->mappers[$sourceName] = $definition;
@@ -122,7 +122,7 @@ class Prop
      *
      * @return Prop
      */
-    public function withoutMapper(string $sourceName)
+    public function withoutMapper(string $sourceName): Prop
     {
         if ($sourceName === 'default') {
             throw new \InvalidArgumentException('Default mapper cannot be removed');
@@ -191,7 +191,7 @@ class Prop
      *
      * @return Prop
      */
-    public function withMeta(string $key, $value)
+    public function withMeta(string $key, $value): Prop
     {
         $clone = clone $this;
         $clone->meta[$key] = $value;
@@ -203,7 +203,7 @@ class Prop
      *
      * @return Prop
      */
-    public function withoutMeta(string $key)
+    public function withoutMeta(string $key): Prop
     {
         $clone = clone $this;
         unset($clone->meta[$key]);

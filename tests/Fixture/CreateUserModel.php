@@ -53,4 +53,13 @@ class CreateUserModel extends Struct
                 ->notRequired()
         );
     }
+
+    protected static function jsonSerializeValue($value)
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format(\DateTime::RFC3339_EXTENDED);
+        }
+
+        return $value;
+    }
 }

@@ -5,7 +5,7 @@
 ![](https://img.shields.io/badge/dependencies-zero-blue.svg)
 ![](https://img.shields.io/badge/license-MIT-green.svg)
 
-Declarative structure builder for PHP 7
+Declarative structure builder for PHP 7.
 
 ## Usage
 
