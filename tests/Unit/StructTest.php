@@ -6,6 +6,7 @@ use Acelot\Struct\Exception\UndefinedPropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema;
 use Acelot\Struct\Tests\Fixture\CreateUserModel;
+use PHPUnit\Framework\Error\Notice;
 use PHPUnit\Framework\TestCase;
 
 class StructTest extends TestCase
@@ -32,25 +33,26 @@ class StructTest extends TestCase
             'birthday' => new \DateTimeImmutable('1988-08-08')
         ], $model->toArray());
 
-        $this->assertTrue(isset($model->login));
+        $this->assertTrue(property_exists($model, 'login'));
         $this->assertTrue($model->has('login'));
         $this->assertEquals('superhacker', $model->login);
         $this->assertEquals('superhacker', $model->get('login'));
 
-        $this->assertTrue(isset($model->password));
+        $this->assertTrue(property_exists($model, 'password'));
         $this->assertTrue($model->has('password'));
         $this->assertEquals('correcthorsebatterystaple', $model->password);
         $this->assertEquals('correcthorsebatterystaple', $model->get('password'));
 
-        $this->assertTrue(isset($model->birthday));
+        $this->assertTrue(property_exists($model, 'birthday'));
         $this->assertTrue($model->has('birthday'));
         $this->assertEquals(new \DateTimeImmutable('1988-08-08'), $model->birthday);
         $this->assertEquals(new \DateTimeImmutable('1988-08-08'), $model->get('birthday'));
 
-        $this->assertFalse(isset($model->name));
+        $this->assertFalse(property_exists($model, 'name'));
         $this->assertFalse($model->has('name'));
         $this->assertEquals('John Doe', $model->get('name', 'John Doe'));
-        $this->expectException(UndefinedPropertyException::class);
+
+        $this->expectException(Notice::class);
         $name = $model->name;
     }
 
@@ -65,10 +67,10 @@ class StructTest extends TestCase
 
         $this->assertInstanceOf(Schema::class, $schema);
 
-        $this->assertTrue($schema->has('login'));
-        $this->assertTrue($schema->has('password'));
-        $this->assertTrue($schema->has('birthday'));
-        $this->assertTrue($schema->has('name'));
+        $this->assertTrue($schema->hasProp('login'));
+        $this->assertTrue($schema->hasProp('password'));
+        $this->assertTrue($schema->hasProp('birthday'));
+        $this->assertTrue($schema->hasProp('name'));
     }
 
     public function testMapFrom()
@@ -132,6 +134,7 @@ class StructTest extends TestCase
         ]);
 
         $json = json_encode($model);
-        $this->assertEquals('{"login":"superhacker","password":"correcthorsebatterystaple","birthday":"1988-08-08T00:00:00.000+00:00"}', $json);
+        $this->assertEquals('{"login":"superhacker","password":"correcthorsebatterystaple","birthday":"1988-08-08T00:00:00.000+00:00"}',
+            $json);
     }
 }

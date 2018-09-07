@@ -30,6 +30,16 @@ class Prop
     protected $required;
 
     /**
+     * @var bool
+     */
+    protected $hasDefaultValue;
+
+    /**
+     * @var mixed
+     */
+    protected $defaultValue;
+
+    /**
      * @var array
      */
     protected $meta;
@@ -53,6 +63,8 @@ class Prop
         $this->validator = new AlwaysValid();
         $this->mappers = ['default' => From::create($name)];
         $this->required = true;
+        $this->hasDefaultValue = false;
+        $this->defaultValue = null;
         $this->meta = [];
     }
 
@@ -70,6 +82,16 @@ class Prop
     public function getValidator(): Validatable
     {
         return $this->validator;
+    }
+
+    /**
+     * @param Validatable $validator
+     *
+     * @return Prop
+     */
+    public function validator(Validatable $validator): Prop
+    {
+        return $this->withValidator($validator);
     }
 
     /**
@@ -102,6 +124,17 @@ class Prop
     public function getMapper(string $sourceName): DefinitionInterface
     {
         return $this->mappers[$sourceName];
+    }
+
+    /**
+     * @param DefinitionInterface $definition
+     * @param string              $sourceName
+     *
+     * @return Prop
+     */
+    public function mapper(DefinitionInterface $definition, string $sourceName): Prop
+    {
+        return $this->withMapper($definition, $sourceName);
     }
 
     /**
@@ -162,6 +195,56 @@ class Prop
     }
 
     /**
+     * @return bool
+     */
+    public function hasDefaultValue(): bool
+    {
+        return $this->hasDefaultValue;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        return $this->defaultValue;
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return Prop
+     */
+    public function defaultValue($value): Prop
+    {
+        return $this->withDefaultValue($value);
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return Prop
+     */
+    public function withDefaultValue($value): Prop
+    {
+        $clone = clone $this;
+        $clone->hasDefaultValue = true;
+        $clone->defaultValue = $value;
+        return $clone;
+    }
+
+    /**
+     * @return Prop
+     */
+    public function withoutDefaultValue(): Prop
+    {
+        $clone = clone $this;
+        $clone->hasDefaultValue = false;
+        $clone->defaultValue = null;
+        return $clone;
+    }
+
+    /**
      * @param string $key
      *
      * @return bool
@@ -183,6 +266,17 @@ class Prop
             return $default;
         }
         return $this->meta[$key];
+    }
+
+    /**
+     * @param string $key
+     * @param mixed  $value
+     *
+     * @return Prop
+     */
+    public function meta(string $key, $value): Prop
+    {
+        return $this->withMeta($key, $value);
     }
 
     /**
