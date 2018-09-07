@@ -4,20 +4,16 @@ namespace Acelot\Struct;
 
 use Acelot\AutoMapper\AutoMapper;
 use Acelot\AutoMapper\Field;
-use Acelot\Struct\Exception\UndefinedPropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema\Prop;
 use Respect\Validation\Exceptions\AttributeException;
 use Respect\Validation\Exceptions\NestedValidationException;
-use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Rules\Key as ValidationKey;
+use Respect\Validation\Rules\KeySet;
 
 abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 {
-    /**
-     * @var array
-     */
-    protected $data = [];
+    private $__defined_props = [];
 
     /**
      * @return Schema
@@ -56,77 +52,37 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function __construct(array $data)
     {
-        $this->data = $this->validate($data);
+        $this->validate($data);
     }
 
-    /**
-     * @param $name
-     *
-     * @return mixed
-     * @throws UndefinedPropertyException
-     */
-    public function __get(string $name)
-    {
-        if (!$this->has($name)) {
-            throw new UndefinedPropertyException();
-        }
-
-        return $this->get($name);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function __isset(string $name): bool
-    {
-        return $this->has($name);
-    }
-
-    /**
-     * @return mixed
-     */
     public function current()
     {
-        return current($this->data);
+        return $this->{current($this->__defined_props)};
     }
 
-    /**
-     * @return mixed
-     */
     public function next()
     {
-        return next($this->data);
+        return $this->{next($this->__defined_props)} ?? false;
     }
 
-    /**
-     * @return string|null
-     */
     public function key()
     {
-        return key($this->data);
+        return current($this->__defined_props);
     }
 
-    /**
-     * @return bool
-     */
     public function valid()
     {
-        return key($this->data) !== null;
+        return key($this->__defined_props) !== null;
     }
 
     public function rewind()
     {
-        reset($this->data);
+        reset($this->__defined_props);
     }
 
-    /**
-     * @return int
-     */
     public function count()
     {
-        return count($this->data);
+        return count($this->__defined_props);
     }
 
     /**
@@ -136,7 +92,7 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->data);
+        return property_exists($this, $key);
     }
 
     /**
@@ -151,7 +107,7 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
             return $default;
         }
 
-        return $this->data[$key];
+        return $this->{$key};
     }
 
     /**
@@ -163,9 +119,9 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function set(string $key, $value)
     {
-        $temp = $this->data;
-        $temp[$key] = $value;
-        return new static($temp);
+        $data = $this->toArray();
+        $data[$key] = $value;
+        return new static($data);
     }
 
     /**
@@ -176,9 +132,9 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function delete(string $key)
     {
-        $temp = $this->data;
-        unset($temp[$key]);
-        return new static($temp);
+        $data = $this->toArray();
+        unset($data[$key]);
+        return new static($data);
     }
 
     /**
@@ -186,7 +142,10 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function toArray(): array
     {
-        return $this->data;
+        return array_reduce($this->__defined_props, function ($carry, $prop) {
+            $carry[$prop] = $this->{$prop};
+            return $carry;
+        }, []);
     }
 
     /**
@@ -221,25 +180,15 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
     /**
      * @param array $newData
      *
-     * @return array
      * @throws ValidationException
      */
-    protected function validate(array $newData): array
+    protected function validate(array $newData): void
     {
-        $props = static::getSchema()->getProps();
-
-        $extraKeys = array_keys(array_diff_key($newData, $props));
-        if (!empty($extraKeys)) {
-            throw new ValidationException(array_map(function ($extraKey) {
-                return [$extraKey => 'Неизвестный ключ'];
-            }, $extraKeys));
-        }
-
         $rules = array_map(function (Prop $prop) {
             return new ValidationKey($prop->getName(), $prop->getValidator(), $prop->isRequired());
-        }, $props);
+        }, static::getSchema()->getProps());
 
-        $validator = new AllOf(...array_values($rules));
+        $validator = new KeySet(...array_values($rules));
 
         try {
             $validator->assert($newData);
@@ -247,7 +196,10 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
             throw new ValidationException(self::getErrorsDeep($e));
         }
 
-        return array_merge($this->data, $newData);
+        foreach ($newData as $key => $value) {
+            $this->{$key} = $value;
+            $this->__defined_props[] = $key;
+        }
     }
 
     /**

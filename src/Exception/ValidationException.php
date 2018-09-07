@@ -12,13 +12,13 @@ class ValidationException extends StructException
     protected $errors;
 
     /**
-     * @param array          $errors
+     * @param string|array   $errors
      * @param Throwable|null $previous
      */
-    public function __construct(array $errors, Throwable $previous = null)
+    public function __construct($errors, Throwable $previous = null)
     {
-        parent::__construct('Validation error', 0, $previous);
-        $this->errors = $errors;
+        parent::__construct(is_string($errors) ? $errors : 'Validation error', 0, $previous);
+        $this->errors = is_array($errors) ? $errors : [];
     }
 
     /**
