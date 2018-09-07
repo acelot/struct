@@ -67,10 +67,10 @@ class StructTest extends TestCase
 
         $this->assertInstanceOf(Schema::class, $schema);
 
-        $this->assertTrue($schema->has('login'));
-        $this->assertTrue($schema->has('password'));
-        $this->assertTrue($schema->has('birthday'));
-        $this->assertTrue($schema->has('name'));
+        $this->assertTrue($schema->hasProp('login'));
+        $this->assertTrue($schema->hasProp('password'));
+        $this->assertTrue($schema->hasProp('birthday'));
+        $this->assertTrue($schema->hasProp('name'));
     }
 
     public function testMapFrom()

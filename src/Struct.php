@@ -184,11 +184,27 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     protected function validate(array $newData): void
     {
+        $props = static::getSchema()->getProps();
+
         $rules = array_map(function (Prop $prop) {
             return new ValidationKey($prop->getName(), $prop->getValidator(), $prop->isRequired());
-        }, static::getSchema()->getProps());
+        }, $props);
 
         $validator = new KeySet(...array_values($rules));
+
+        // Assign default values
+        foreach ($props as $prop) {
+            if (!$prop->isRequired()) {
+                continue;
+            }
+            if (!$prop->hasDefaultValue()) {
+                continue;
+            }
+            if (array_key_exists($prop->getName(), $newData)) {
+                continue;
+            }
+            $newData[$prop->getName()] = $prop->getDefaultValue();
+        }
 
         try {
             $validator->assert($newData);

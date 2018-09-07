@@ -35,9 +35,9 @@ class SchemaTest extends TestCase
             Prop::create('password')
         );
 
-        $this->assertTrue($schema->has('login'));
-        $this->assertTrue($schema->has('password'));
-        $this->assertFalse($schema->has('name'));
+        $this->assertTrue($schema->hasProp('login'));
+        $this->assertTrue($schema->hasProp('password'));
+        $this->assertFalse($schema->hasProp('name'));
     }
 
     public function testGet()
@@ -47,11 +47,11 @@ class SchemaTest extends TestCase
             Prop::create('password')
         );
 
-        $this->assertEquals(Prop::create('login'), $schema->get('login'));
-        $this->assertEquals(Prop::create('password'), $schema->get('password'));
+        $this->assertEquals(Prop::create('login'), $schema->getProp('login'));
+        $this->assertEquals(Prop::create('password'), $schema->getProp('password'));
 
         $this->expectException(\OutOfBoundsException::class);
-        $schema->get('name');
+        $schema->getProp('name');
     }
 
     public function testWith()
@@ -59,21 +59,21 @@ class SchemaTest extends TestCase
         $schema = new Schema(Prop::create('login'));
         $this->assertCount(1, $schema->getProps());
 
-        $schema = $schema->with(Prop::create('password'));
+        $schema = $schema->withProp(Prop::create('password'));
         $this->assertCount(2, $schema->getProps());
-        $this->assertEquals(Prop::create('password'), $schema->get('password'));
+        $this->assertEquals(Prop::create('password'), $schema->getProp('password'));
 
-        $schema = $schema->with(
+        $schema = $schema->withProp(
             Prop::create('name'),
             Prop::create('birthday')
         );
 
         $this->assertCount(4, $schema->getProps());
-        $this->assertEquals(Prop::create('name'), $schema->get('name'));
-        $this->assertEquals(Prop::create('birthday'), $schema->get('birthday'));
+        $this->assertEquals(Prop::create('name'), $schema->getProp('name'));
+        $this->assertEquals(Prop::create('birthday'), $schema->getProp('birthday'));
 
         $this->expectException(\InvalidArgumentException::class);
-        $schema->with();
+        $schema->withProp();
     }
 
     public function testWithout()
@@ -86,11 +86,11 @@ class SchemaTest extends TestCase
         );
         $this->assertCount(4, $schema->getProps());
 
-        $schema = $schema->without('name');
+        $schema = $schema->withoutProp('name');
         $this->assertCount(3, $schema->getProps());
         $this->assertArrayNotHasKey('name', $schema->getProps());
 
-        $schema = $schema->without('undefined');
+        $schema = $schema->withoutProp('undefined');
         $this->assertCount(3, $schema->getProps());
     }
 }

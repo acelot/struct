@@ -38,7 +38,7 @@ class Schema
      *
      * @return bool
      */
-    public function has(string $name): bool
+    public function hasProp(string $name): bool
     {
         return array_key_exists($name, $this->props);
     }
@@ -49,9 +49,9 @@ class Schema
      * @return Prop
      * @throws \OutOfBoundsException
      */
-    public function get(string $name): Prop
+    public function getProp(string $name): Prop
     {
-        if (!$this->has($name)) {
+        if (!$this->hasProp($name)) {
             throw new \OutOfBoundsException(sprintf('Property "%s" not exists in struct', $name));
         }
 
@@ -63,7 +63,17 @@ class Schema
      *
      * @return Schema
      */
-    public function with(Prop ...$props): Schema
+    public function prop(Prop ...$props): Schema
+    {
+        return $this->withProp(...$props);
+    }
+
+    /**
+     * @param Prop ...$props
+     *
+     * @return Schema
+     */
+    public function withProp(Prop ...$props): Schema
     {
         if (empty($props)) {
             throw new \InvalidArgumentException('At least one prop must be defined');
@@ -82,7 +92,7 @@ class Schema
      *
      * @return Schema
      */
-    public function without(string $name): Schema
+    public function withoutProp(string $name): Schema
     {
         $clone = clone $this;
         unset($clone->props[$name]);
