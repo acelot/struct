@@ -8,6 +8,7 @@ use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema\Prop;
 use Respect\Validation\Exceptions\AttributeException;
 use Respect\Validation\Exceptions\NestedValidationException;
+use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Rules\Key as ValidationKey;
 use Respect\Validation\Rules\KeySet;
 
@@ -186,11 +187,18 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
     {
         $props = static::getSchema()->getProps();
 
+        $extraKeys = array_keys(array_diff_key($newData, $props));
+        if (!empty($extraKeys)) {
+            throw new ValidationException(array_map(function ($extraKey) {
+                return [$extraKey => "Property \"${$extraKey}\" not defined in schema"];
+            }, $extraKeys));
+        }
+
         $rules = array_map(function (Prop $prop) {
             return new ValidationKey($prop->getName(), $prop->getValidator(), $prop->isRequired());
         }, $props);
 
-        $validator = new KeySet(...array_values($rules));
+        $validator = new AllOf(...array_values($rules));
 
         // Assign default values
         foreach ($props as $prop) {
