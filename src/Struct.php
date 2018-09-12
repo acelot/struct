@@ -190,7 +190,7 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
         $extraKeys = array_keys(array_diff_key($newData, $props));
         if (!empty($extraKeys)) {
             throw new ValidationException(array_map(function ($extraKey) {
-                return [$extraKey => "Property \"${$extraKey}\" not defined in schema"];
+                return [$extraKey => "Property \"$extraKey\" not defined in schema"];
             }, $extraKeys));
         }
 
