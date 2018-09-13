@@ -10,7 +10,6 @@ use Respect\Validation\Exceptions\AttributeException;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Rules\Key as ValidationKey;
-use Respect\Validation\Rules\KeySet;
 
 abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 {
@@ -120,7 +119,7 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function set(string $key, $value)
     {
-        $data = $this->toArray();
+        $data = iterator_to_array($this);
         $data[$key] = $value;
         return new static($data);
     }
@@ -133,35 +132,24 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function delete(string $key)
     {
-        $data = $this->toArray();
+        $data = iterator_to_array($this);
         unset($data[$key]);
         return new static($data);
     }
 
     /**
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return array_reduce($this->__defined_props, function ($carry, $prop) {
-            $carry[$prop] = $this->{$prop};
-            return $carry;
-        }, []);
-    }
-
-    /**
-     * @return array
+     * @return object
      */
     public function jsonSerialize()
     {
-        $data = [];
+        $data = new \stdClass();
         foreach (static::getSchema()->getProps() as $prop) {
             if (!$this->has($prop->getName())) {
                 continue;
             }
 
             $value = $this->get($prop->getName());
-            $data[$prop->getName()] = static::jsonSerializeValue($value);
+            $data->{$prop->getName()} = static::jsonSerializeValue($value);
         }
 
         return $data;

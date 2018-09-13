@@ -5,6 +5,7 @@ namespace Acelot\Struct\Tests\Unit;
 use Acelot\Struct\Exception\UndefinedPropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema;
+use Acelot\Struct\Tests\Fixture\CanBeEmptyModel;
 use Acelot\Struct\Tests\Fixture\CreateUserModel;
 use PHPUnit\Framework\Error\Notice;
 use PHPUnit\Framework\TestCase;
@@ -31,7 +32,7 @@ class StructTest extends TestCase
             'login' => 'superhacker',
             'password' => 'correcthorsebatterystaple',
             'birthday' => new \DateTimeImmutable('1988-08-08')
-        ], $model->toArray());
+        ], iterator_to_array($model));
 
         $this->assertTrue(property_exists($model, 'login'));
         $this->assertTrue($model->has('login'));
@@ -133,8 +134,12 @@ class StructTest extends TestCase
             'birthday' => new \DateTimeImmutable('1988-08-08', new \DateTimeZone('UTC'))
         ]);
 
-        $json = json_encode($model);
-        $this->assertEquals('{"login":"superhacker","password":"correcthorsebatterystaple","birthday":"1988-08-08T00:00:00.000+00:00"}',
-            $json);
+        $this->assertEquals(
+            '{"login":"superhacker","password":"correcthorsebatterystaple","birthday":"1988-08-08T00:00:00.000+00:00"}',
+            json_encode($model)
+        );
+
+        $emptyModel = new CanBeEmptyModel([]);
+        $this->assertEquals('{}', json_encode($emptyModel));
     }
 }
