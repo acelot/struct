@@ -135,7 +135,7 @@ class StructTest extends TestCase
         ]);
 
         $this->assertEquals(
-            '{"login":"superhacker","password":"correcthorsebatterystaple","birthday":"1988-08-08T00:00:00.000+00:00"}',
+            '{"login":"superhacker","birthday":"1988-08-08T00:00:00.000+00:00"}',
             json_encode($model)
         );
 

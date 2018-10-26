@@ -2,6 +2,7 @@
 
 namespace Acelot\Struct\Tests\Fixture;
 
+use Acelot\Struct\Exception\ExcludePropertyException;
 use Acelot\Struct\Schema;
 use Acelot\Struct\Schema\Prop;
 use Acelot\Struct\Struct;
@@ -54,10 +55,14 @@ class CreateUserModel extends Struct
         );
     }
 
-    protected static function jsonSerializeValue($value)
+    protected static function jsonSerializeValue($value, Prop $prop)
     {
         if ($value instanceof \DateTimeInterface) {
             return $value->format(\DateTime::RFC3339_EXTENDED);
+        }
+
+        if ($prop->getName() === 'password') {
+            throw new ExcludePropertyException();
         }
 
         return $value;

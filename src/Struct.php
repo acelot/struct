@@ -4,6 +4,7 @@ namespace Acelot\Struct;
 
 use Acelot\AutoMapper\AutoMapper;
 use Acelot\AutoMapper\Field;
+use Acelot\Struct\Exception\ExcludePropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema\Prop;
 use Respect\Validation\Exceptions\AttributeException;
@@ -148,8 +149,11 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
                 continue;
             }
 
-            $value = $this->get($prop->getName());
-            $data->{$prop->getName()} = static::jsonSerializeValue($value);
+            try {
+                $data->{$prop->getName()} = static::jsonSerializeValue($this->get($prop->getName()), $prop);
+            } catch (ExcludePropertyException $e) {
+                continue;
+            }
         }
 
         return $data;
@@ -157,11 +161,13 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 
     /**
      * @param mixed $value
+     * @param Prop  $prop
      *
      * @return mixed
+     * @throws ExcludePropertyException
      * @codeCoverageIgnore
      */
-    protected static function jsonSerializeValue($value)
+    protected static function jsonSerializeValue($value, Prop $prop)
     {
         return $value;
     }
