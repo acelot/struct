@@ -23,12 +23,13 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 
     /**
      * @param array|object $data
-     * @param string       $sourceName
+     * @param string $sourceName
+     * @param bool $allowPartial - разрешать созадвать не полную модель
+     * (игнорировать валидацию отсутствующих в data св-в)
      *
      * @return static
-     * @throws ValidationException
      */
-    public static function mapFrom($data, string $sourceName)
+    public static function mapFrom($data, string $sourceName, bool $allowPartial = false)
     {
         $fields = array_map(
             function (Prop $prop) use ($sourceName) {
@@ -43,17 +44,16 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 
         $mapper = AutoMapper::create(...array_values($fields))->ignoreAllMissing();
 
-        return new static($mapper->marshalArray($data));
+        return new static($mapper->marshalArray($data), $allowPartial);
     }
 
     /**
      * @param array $data
-     *
-     * @throws ValidationException
+     * @param bool $allowPartial - разрешать созадвать не полную модель
      */
-    public function __construct(array $data)
+    public function __construct(array $data, bool $allowPartial = false)
     {
-        $this->validate($data);
+        $this->validate($data, $allowPartial);
     }
 
     public function current()
@@ -174,10 +174,9 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 
     /**
      * @param array $newData
-     *
-     * @throws ValidationException
+     * @param bool $allowPartial - игнорировать валидацию isRequired
      */
-    protected function validate(array $newData): void
+    protected function validate(array $newData, bool $allowPartial = false): void
     {
         $props = static::getSchema()->getProps();
 
@@ -188,8 +187,9 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
             }, $extraKeys));
         }
 
-        $rules = array_map(function (Prop $prop) {
-            return new ValidationKey($prop->getName(), $prop->getValidator(), $prop->isRequired());
+        $rules = array_map(function (Prop $prop) use ($allowPartial) {
+            $isRequired = $allowPartial ? false : $prop->isRequired();
+            return new ValidationKey($prop->getName(), $prop->getValidator(), $isRequired);
         }, $props);
 
         $validator = new AllOf(...array_values($rules));
