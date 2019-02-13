@@ -3,14 +3,18 @@
 namespace Acelot\Struct;
 
 use Acelot\AutoMapper\AutoMapper;
+use Acelot\AutoMapper\Definition\Value;
 use Acelot\AutoMapper\Field;
 use Acelot\Struct\Exception\ExcludePropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema\Prop;
+use Acelot\Struct\Value\Hydrated;
 use Respect\Validation\Exceptions\AttributeException;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Rules\AllOf;
+use Respect\Validation\Rules\Instance;
 use Respect\Validation\Rules\Key as ValidationKey;
+use Respect\Validation\Rules\OneOf;
 
 abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 {
@@ -23,20 +27,19 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 
     /**
      * @param array|object $data
-     * @param string       $sourceName
+     * @param string $sourceName
+     * @param string[] $hydratedProps
      *
      * @return static
-     * @throws ValidationException
+     * @throws \Acelot\AutoMapper\Exception\InvalidSourceException
+     * @throws \Acelot\AutoMapper\Exception\InvalidTargetException
+     * @throws \Acelot\AutoMapper\Exception\SourceFieldMissingException
      */
-    public static function mapFrom($data, string $sourceName)
+    public static function mapFrom($data, string $sourceName, array $hydratedProps = [])
     {
         $fields = array_map(
-            function (Prop $prop) use ($sourceName) {
-                $mapper = $prop->hasMapper($sourceName)
-                    ? $prop->getMapper($sourceName)
-                    : $prop->getMapper('default');
-
-                return Field::create($prop->getName(), $mapper);
+            function (Prop $prop) use ($sourceName, $hydratedProps) {
+                return Field::create($prop->getName(), static::getMapper($prop, $sourceName, $hydratedProps));
             },
             static::getSchema()->getProps()
         );
@@ -148,6 +151,9 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
             if (!$this->has($prop->getName())) {
                 continue;
             }
+            if ($this->get($prop->getName()) instanceof Hydrated) {
+                continue;
+            }
 
             try {
                 $data->{$prop->getName()} = static::jsonSerializeValue($this->get($prop->getName()), $prop);
@@ -188,8 +194,15 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
             }, $extraKeys));
         }
 
-        $rules = array_map(function (Prop $prop) {
-            return new ValidationKey($prop->getName(), $prop->getValidator(), $prop->isRequired());
+        $rules = array_map(function (Prop $prop)  {
+            return new ValidationKey(
+                $prop->getName(),
+                new OneOf(
+                    new Instance(Hydrated::class),
+                    $prop->getValidator()
+                ),
+                $prop->isRequired()
+            );
         }, $props);
 
         $validator = new AllOf(...array_values($rules));
@@ -243,5 +256,24 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
         }
 
         return $errors;
+    }
+
+    /**
+     * @param Prop $prop
+     * @param string $sourceName
+     * @param array $hydratedProps
+     *
+     * @return Value|\Acelot\AutoMapper\DefinitionInterface
+     */
+    private static function getMapper(Prop $prop, string $sourceName, array $hydratedProps = []) {
+        if (in_array($prop->getName(), $hydratedProps, true)) {
+            return new Value(new Hydrated());
+        }
+
+        if ($prop->hasMapper($sourceName)) {
+            return $prop->getMapper($sourceName);
+        }
+
+        return $prop->getMapper('default');
     }
 }
