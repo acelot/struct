@@ -96,12 +96,11 @@ class StructTest extends TestCase
             'birthday' => '1988-08-08'
         ], 'json', ['login', 'password']);
 
-        $this->assertTrue(property_exists($model, 'login'));
-        $this->assertTrue(property_exists($model, 'password'));
-        $this->assertTrue($model->login instanceof Hydrated);
-        $this->assertTrue($model->password instanceof Hydrated);
-        $this->assertEquals(new \DateTimeImmutable('1988-08-08'), $model->birthday);
-        $this->assertEquals('John Doe', $model->name);
+        $this->assertEquals('superhacker', $model->login);
+        $this->assertEquals('correcthorsebatterystaple', $model->password);
+        $this->assertTrue($model->name instanceof Hydrated);
+        $this->assertTrue(property_exists($model, 'birthday'));
+        $this->assertTrue($model->birthday instanceof Hydrated);
     }
 
     public function testIterator()
@@ -165,7 +164,7 @@ class StructTest extends TestCase
             'login' => 'superhacker',
             'password' => 'correcthorsebatterystaple',
             'birthday' => '1988-08-08'
-        ], 'json', ['birthday']);
+        ], 'json', ['login', 'name']);
 
         $this->assertEquals(
             '{"login":"superhacker","name":"John Doe"}',

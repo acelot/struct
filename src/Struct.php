@@ -28,18 +28,18 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
     /**
      * @param array|object $data
      * @param string $sourceName
-     * @param string[] $hydratedProps
+     * @param string[] $props
      *
      * @return static
      * @throws \Acelot\AutoMapper\Exception\InvalidSourceException
      * @throws \Acelot\AutoMapper\Exception\InvalidTargetException
      * @throws \Acelot\AutoMapper\Exception\SourceFieldMissingException
      */
-    public static function mapFrom($data, string $sourceName, array $hydratedProps = [])
+    public static function mapFrom($data, string $sourceName, array $props = [])
     {
         $fields = array_map(
-            function (Prop $prop) use ($sourceName, $hydratedProps) {
-                return Field::create($prop->getName(), static::getMapper($prop, $sourceName, $hydratedProps));
+            function (Prop $prop) use ($sourceName, $props) {
+                return Field::create($prop->getName(), static::getMapper($prop, $sourceName, $props));
             },
             static::getSchema()->getProps()
         );
@@ -261,12 +261,12 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
     /**
      * @param Prop $prop
      * @param string $sourceName
-     * @param array $hydratedProps
+     * @param string[] $props
      *
      * @return Value|\Acelot\AutoMapper\DefinitionInterface
      */
-    private static function getMapper(Prop $prop, string $sourceName, array $hydratedProps = []) {
-        if (in_array($prop->getName(), $hydratedProps, true)) {
+    private static function getMapper(Prop $prop, string $sourceName, array $props = []) {
+        if (!empty($props) && !in_array($prop->getName(), $props, true)) {
             return new Value(new Hydrated());
         }
 
