@@ -2,11 +2,11 @@
 
 namespace Acelot\Struct\Tests\Unit;
 
-use Acelot\Struct\Exception\UndefinedPropertyException;
 use Acelot\Struct\Exception\ValidationException;
 use Acelot\Struct\Schema;
 use Acelot\Struct\Tests\Fixture\CanBeEmptyModel;
 use Acelot\Struct\Tests\Fixture\CreateUserModel;
+use Acelot\Struct\Value\Hydrated;
 use PHPUnit\Framework\Error\Notice;
 use PHPUnit\Framework\TestCase;
 
@@ -88,6 +88,21 @@ class StructTest extends TestCase
         $this->assertEquals('John Doe', $model->name);
     }
 
+    public function testMapFromHydrated()
+    {
+        $model = CreateUserModel::mapFrom([
+            'login' => 'superhacker',
+            'password' => 'correcthorsebatterystaple',
+            'birthday' => '1988-08-08'
+        ], 'json', ['login', 'password']);
+
+        $this->assertEquals('superhacker', $model->login);
+        $this->assertEquals('correcthorsebatterystaple', $model->password);
+        $this->assertTrue($model->name instanceof Hydrated);
+        $this->assertTrue(property_exists($model, 'birthday'));
+        $this->assertTrue($model->birthday instanceof Hydrated);
+    }
+
     public function testIterator()
     {
         $model = new CreateUserModel([
@@ -136,6 +151,23 @@ class StructTest extends TestCase
 
         $this->assertEquals(
             '{"login":"superhacker","birthday":"1988-08-08T00:00:00.000+00:00"}',
+            json_encode($model)
+        );
+
+        $emptyModel = new CanBeEmptyModel([]);
+        $this->assertEquals('{}', json_encode($emptyModel));
+    }
+
+    public function testJsonSerializeHydrated()
+    {
+        $model = CreateUserModel::mapFrom([
+            'login' => 'superhacker',
+            'password' => 'correcthorsebatterystaple',
+            'birthday' => '1988-08-08'
+        ], 'json', ['login', 'name']);
+
+        $this->assertEquals(
+            '{"login":"superhacker","name":"John Doe"}',
             json_encode($model)
         );
 
