@@ -26,12 +26,13 @@ class StructTest extends TestCase
             'birthday' => new \DateTimeImmutable('1988-08-08')
         ]);
 
-        $this->assertEquals(3, count($model));
+        $this->assertEquals(4, count($model));
 
         $this->assertEquals([
             'login' => 'superhacker',
             'password' => 'correcthorsebatterystaple',
-            'birthday' => new \DateTimeImmutable('1988-08-08')
+            'birthday' => new \DateTimeImmutable('1988-08-08'),
+            'isActive' => true
         ], iterator_to_array($model));
 
         $this->assertTrue(property_exists($model, 'login'));
@@ -126,15 +127,15 @@ class StructTest extends TestCase
             'birthday' => new \DateTimeImmutable('1988-08-08')
         ]);
 
-        $this->assertCount(3, $model);
+        $this->assertCount(4, $model);
 
         $model = $model->set('name', 'Judy Doe');
-        $this->assertCount(4, $model);
+        $this->assertCount(5, $model);
         $this->assertTrue($model->has('name'));
         $this->assertEquals('Judy Doe', $model->name);
 
         $model = $model->delete('birthday');
-        $this->assertCount(3, $model);
+        $this->assertCount(4, $model);
         $this->assertFalse($model->has('birthday'));
 
         $this->expectException(ValidationException::class);
@@ -150,7 +151,7 @@ class StructTest extends TestCase
         ]);
 
         $this->assertEquals(
-            '{"login":"superhacker","birthday":"1988-08-08T00:00:00.000+00:00"}',
+            '{"login":"superhacker","birthday":"1988-08-08T00:00:00.000+00:00","isActive":true}',
             json_encode($model)
         );
 
@@ -165,6 +166,10 @@ class StructTest extends TestCase
             'password' => 'correcthorsebatterystaple',
             'birthday' => '1988-08-08'
         ], 'json', ['login', 'name']);
+
+        $this->assertTrue($model->isHydrated('password'));
+        $this->assertTrue($model->isHydrated('birthday'));
+        $this->assertTrue($model->isHydrated('isActive'));
 
         $this->assertEquals(
             '{"login":"superhacker","name":"John Doe"}',

@@ -9,15 +9,20 @@ use Acelot\Struct\Struct;
 
 use function Acelot\AutoMapper\from;
 
-use Respect\Validation\Rules\{
-    AllOf, StringType, Alnum, NoWhitespace, Length, Instance
-};
+use Respect\Validation\Rules\AllOf;
+use Respect\Validation\Rules\BoolType;
+use Respect\Validation\Rules\StringType;
+use Respect\Validation\Rules\Alnum;
+use Respect\Validation\Rules\NoWhitespace;
+use Respect\Validation\Rules\Length;
+use Respect\Validation\Rules\Instance;
 
 /**
  * @property-read string             $login
  * @property-read string             $password
  * @property-read string             $name
  * @property-read \DateTimeInterface $birthday
+ * @property-read bool               $isActive
  */
 class CreateUserModel extends Struct
 {
@@ -51,7 +56,11 @@ class CreateUserModel extends Struct
                 ->withMapper(from('birthday')->convert(function ($value) {
                     return new \DateTimeImmutable($value);
                 }), 'json')
-                ->notRequired()
+                ->notRequired(),
+
+            Prop::create('isActive')
+                ->withValidator(new BoolType())
+                ->defaultValue(true)
         );
     }
 

@@ -19,6 +19,7 @@ use Respect\Validation\Rules\OneOf;
 abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 {
     private $__defined_props = [];
+    private $__hydrated_props = [];
 
     /**
      * @return Schema
@@ -96,7 +97,17 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
      */
     public function has(string $key): bool
     {
-        return property_exists($this, $key);
+        return array_search($key, $this->__defined_props) !== false;
+    }
+
+    /**
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function isHydrated(string $key): bool
+    {
+        return array_search($key, $this->__hydrated_props) !== false;
     }
 
     /**
@@ -229,7 +240,11 @@ abstract class Struct implements \Iterator, \Countable, \JsonSerializable
 
         foreach ($newData as $key => $value) {
             $this->{$key} = $value;
-            $this->__defined_props[] = $key;
+            if ($value instanceof Hydrated) {
+                $this->__hydrated_props[] = $key;
+            } else {
+                $this->__defined_props[] = $key;
+            }
         }
     }
 
